@@ -9,12 +9,14 @@ import (
 	"time"
 
 	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
 	"github.com/labstack/gommon/log"
 )
 
 func main() {
 
 	e := echo.New()
+	e.Use(middleware.Logger())
 
 	e.GET("/api/ping", ping)
 
