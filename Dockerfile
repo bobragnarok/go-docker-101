@@ -4,6 +4,7 @@ WORKDIR /app
 
 COPY go.mod ./
 COPY go.sum ./
+COPY file.txt ./
 RUN go mod download
 
 COPY ./cmd ./cmd
