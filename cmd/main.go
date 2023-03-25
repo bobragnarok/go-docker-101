@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -59,7 +60,8 @@ func waitForGracefulShutdown(e *echo.Echo) {
 }
 
 func initDB() *gorm.DB {
-	dsn := "host=127.0.0.1 port=5432 dbname=postgres user=postgres password=123456 sslmode=disable"
+	url := os.Getenv("DATABASE_URL")
+	dsn := fmt.Sprintf("host=%s port=5432 dbname=postgres user=postgres password=123456 sslmode=disable", url)
 	db, _ := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	return db
 }
