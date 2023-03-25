@@ -2,8 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
-	"io"
 	"net/http"
 	"os"
 	"os/signal"
@@ -13,6 +11,8 @@ import (
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"github.com/labstack/gommon/log"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 func main() {
@@ -28,31 +28,16 @@ func main() {
 }
 
 func ping(c echo.Context) error {
-	var ping string
+	db := initDB()
 
-	file, err := os.Open("file.txt")
-	if err != nil {
-		fmt.Println("File reading error", err)
-	}
-	defer file.Close()
-
-	data := make([]byte, 1024)
-	for {
-		n, err := file.Read(data)
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			fmt.Println("File reading error", err)
-		}
-		ping = string(data[:n])
+	logDate := LogDate{
+		Ping:        "Ping",
+		CreatedDate: time.Now(),
 	}
 
-	if len(ping) == 0 {
-		return c.String(http.StatusOK, "OK")
-	} else {
-		return c.String(http.StatusOK, ping)
-	}
+	db.Table("log_date").Create(&logDate)
+
+	return c.String(http.StatusOK, "OK")
 }
 
 func startServer(e *echo.Echo) {
@@ -71,4 +56,16 @@ func waitForGracefulShutdown(e *echo.Echo) {
 	if err := e.Shutdown(ctx); err != nil {
 		e.Logger.Fatal(err)
 	}
+}
+
+func initDB() *gorm.DB {
+	dsn := "host=127.0.0.1 port=5432 dbname=postgres user=postgres password=123456 sslmode=disable"
+	db, _ := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	return db
+}
+
+type LogDate struct {
+	ID          int       `json:"id" gorm:"primary_key"`
+	Ping        string    `json:"ping"`
+	CreatedDate time.Time `json:"created_date`
 }
